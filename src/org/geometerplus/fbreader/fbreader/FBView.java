@@ -25,6 +25,8 @@ import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.util.ZLColor;
 import org.geometerplus.zlibrary.core.library.ZLibrary;
 import org.geometerplus.zlibrary.core.view.ZLPaintContext;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+
 import org.geometerplus.zlibrary.text.model.ZLTextModel;
 import org.geometerplus.zlibrary.text.model.CharStorageReadException;
 import org.geometerplus.zlibrary.text.view.*;
@@ -79,6 +81,29 @@ public final class FBView extends ZLTextView {
 	private boolean myIsBrightnessAdjustmentInProgress;
 	private int myStartBrightness;
 
+	private static class TapZone {
+		int HIndex;
+		int VIndex;
+		
+		TapZone(int h, int v) {
+			HIndex = h;
+			VIndex = v;
+		}
+
+		void mirror45() {
+			final int swap = HIndex;
+			HIndex = VIndex;
+			VIndex = swap;
+		}
+	}
+
+	TapZone getZoneByCoordinates(int x, int y, int grid) {
+		return new TapZone(
+			x * grid / myContext.getWidth(),
+			y * grid / myContext.getHeight()
+		);
+	}
+
 	public boolean onFingerSingleTap(int x, int y) {
 		if (super.onFingerSingleTap(x, y)) {
 			return true;
@@ -107,21 +132,35 @@ public final class FBView extends ZLTextView {
 		final ScrollingPreferences preferences = ScrollingPreferences.Instance();
 		final ScrollingPreferences.FingerScrolling fingerScrolling =
 			preferences.FingerScrollingOption.getValue();
-		if (fingerScrolling == ScrollingPreferences.FingerScrolling.byTap ||
-			fingerScrolling == ScrollingPreferences.FingerScrolling.byTapAndFlick) {
-			if (preferences.HorizontalOption.getValue()) {
-				if (x <= myContext.getWidth() / 3) {
+
+		final TapZone tapZone = getZoneByCoordinates(x, y, 3);
+		if (!preferences.HorizontalOption.getValue()) {
+			tapZone.mirror45();
+		}
+		final boolean doTapScrolling =
+			fingerScrolling == ScrollingPreferences.FingerScrolling.byTap ||
+			fingerScrolling == ScrollingPreferences.FingerScrolling.byTapAndFlick;
+		switch (tapZone.HIndex) {
+			case 0:
+				if (doTapScrolling) {
 					doScrollPage(false);
-				} else if (x >= myContext.getWidth() * 2 / 3) {
+				}
+				break;
+			case 1:
+				switch (tapZone.VIndex) {
+					case 0:
+						myReader.doAction(ActionCode.SHOW_NAVIGATION);
+						break;
+					case 2:
+						myReader.doAction(ActionCode.SHOW_MENU);
+						break;
+				}
+				break;
+			case 2:
+				if (doTapScrolling) {
 					doScrollPage(true);
 				}
-			} else {
-				if (y <= myContext.getHeight() / 3) {
-					doScrollPage(false);
-				} else if (y >= myContext.getHeight() * 2 / 3) {
-					doScrollPage(true);
-				}
-			}
+				break;
 		}
 
 		return true;
@@ -381,6 +420,20 @@ public final class FBView extends ZLTextView {
 	}
 
 	@Override
+	public ZLFile getWallpaperFile() {
+		final String filePath = myReader.getColorProfile().WallpaperOption.getValue();
+		if ("".equals(filePath)) {
+			return null;
+		}
+		
+		final ZLFile file = ZLFile.createFileByPath(filePath);
+		if (file == null || !file.exists()) {
+			return null;
+		}
+		return file;
+	}
+
+	@Override
 	public ZLColor getBackgroundColor() {
 		return myReader.getColorProfile().BackgroundOption.getValue();
 	}
@@ -470,7 +523,12 @@ public final class FBView extends ZLTextView {
 			final String infoString = info.toString();
 
 			final int infoWidth = context.getStringWidth(infoString);
-			context.clear(bgColor);
+			final ZLFile wallpaper = getWallpaperFile();
+			if (wallpaper != null) {
+				context.clear(wallpaper);
+			} else {
+				context.clear(getBackgroundColor());
+			}
 
 			// draw info text
 			context.setTextColor(fgColor);

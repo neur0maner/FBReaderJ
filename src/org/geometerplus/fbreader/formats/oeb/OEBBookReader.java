@@ -177,6 +177,7 @@ class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 	
 	private int myState;
 
+	@Override
 	public boolean startElementHandler(String tag, ZLStringMap xmlattributes) {
 		try {
 			return startElementHandlerWithException(tag, xmlattributes);
@@ -244,6 +245,7 @@ class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 		return false;
 	}
 
+	@Override
 	public boolean endElementHandler(String tag) {
 		tag = tag.toLowerCase();
 		if ((myOPFSchemePrefix != null) && tag.startsWith(myOPFSchemePrefix)) {
@@ -256,11 +258,13 @@ class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 		return false;
 	}
 
+	@Override
 	public boolean processNamespaces() {
 		return true;
 	}
 
-	public void namespaceMapChangedHandler(HashMap<String,String> namespaceMap) {
+	@Override
+	public void namespaceMapChangedHandler(Map<String,String> namespaceMap) {
 		myOPFSchemePrefix = null;
 		for (Map.Entry<String,String> entry : namespaceMap.entrySet()) {
 			if (OpenPackagingFormat.equals(entry.getValue())) {
@@ -270,6 +274,7 @@ class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 		}
 	}
 
+	@Override
 	public boolean dontCacheAttributeValues() {
 		return true;
 	}

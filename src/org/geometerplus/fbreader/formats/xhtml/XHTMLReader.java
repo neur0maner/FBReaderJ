@@ -23,6 +23,8 @@ import java.util.*;
 
 import org.geometerplus.zlibrary.core.xml.*;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+import org.geometerplus.zlibrary.core.filesystem.ZLArchiveEntryFile;
+import org.geometerplus.zlibrary.core.constants.XMLNamespaces;
 
 import org.geometerplus.zlibrary.text.model.CharStorageWriteException;
 
@@ -84,8 +86,9 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 
 		addAction("a", new XHTMLTagHyperlinkAction());
 
-		addAction("img", new XHTMLTagImageAction("src"));
-		addAction("object", new XHTMLTagImageAction("data"));
+		addAction("img", new XHTMLTagImageAction(null, "src"));
+		addAction("image", new XHTMLTagImageAction(XMLNamespaces.XLink, "href"));
+		addAction("object", new XHTMLTagImageAction(null, "data"));
 
 		//addAction("area", new XHTMLTagAction());
 		//addAction("map", new XHTMLTagAction());
@@ -135,6 +138,7 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 
 	public final String getFileAlias(String fileName) {
 		fileName = MiscUtil.decodeHtmlReference(fileName);
+		fileName = ZLArchiveEntryFile.normalizeEntryName(fileName);
 		Integer num = myFileNumbers.get(fileName);
 		if (num == null) {
 			num = myFileNumbers.size();
@@ -157,6 +161,7 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 		return read(file);
 	}
 
+	@Override
 	public boolean startElementHandler(String tag, ZLStringMap attributes) {
 		try {
 			String id = attributes.getValue("id");
@@ -175,6 +180,7 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 		}
 	}
 
+	@Override
 	public boolean endElementHandler(String tag) {
 		try {
 			XHTMLTagAction action = (XHTMLTagAction)ourTagActions.get(tag.toLowerCase());
@@ -188,6 +194,7 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 		}
 	}
 
+	@Override
 	public void characterDataHandler(char[] data, int start, int len) {
 		try {
 			characterDataHandlerWithException(data, start, len);
@@ -245,18 +252,18 @@ cycle:
 		return ourExternalDTDs;
 	}
 
+	@Override
 	public List<String> externalDTDs() {
 		return xhtmlDTDs();
 	}
 
+	@Override
 	public boolean dontCacheAttributeValues() {
 		return true;
 	}
 
+	@Override
 	public boolean processNamespaces() {
 		return true;
-	}
-
-	public void namespaceMapChangedHandler(HashMap<String,String> namespaceMap) {
 	}
 }
