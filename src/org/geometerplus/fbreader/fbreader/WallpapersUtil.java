@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2011 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,18 @@
 
 package org.geometerplus.fbreader.fbreader;
 
-class VolumeKeyScrollingAction extends FBAction {
-	private final boolean myForward;
+import java.util.List;
 
-	VolumeKeyScrollingAction(FBReaderApp fbreader, boolean forward) {
-		super(fbreader);
-		myForward = forward;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+
+import org.geometerplus.fbreader.Paths;
+
+public abstract class WallpapersUtil {
+	public static List<ZLFile> predefinedWallpaperFiles() {
+		return ZLFile.createFileByPath("wallpapers").children();
 	}
 
-	public boolean isEnabled() {
-		return ScrollingPreferences.Instance().VolumeKeysOption.getValue();
-	}
-
-	public void run() {
-		boolean isInverted = ScrollingPreferences.Instance().InvertVolumeKeysOption.getValue();
-		Reader.getTextView().doScrollPage(isInverted ? !myForward : myForward);
+	public static List<ZLFile> externalWallpaperFiles() {
+		return ZLFile.createFileByPath(Paths.WallpapersDirectoryOption().getValue()).children();
 	}
 }

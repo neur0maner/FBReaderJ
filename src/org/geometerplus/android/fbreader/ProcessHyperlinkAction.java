@@ -19,10 +19,9 @@
 
 package org.geometerplus.android.fbreader;
 
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.ActivityNotFoundException;
 import android.net.Uri;
-//import android.widget.Toast;
 
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
@@ -64,29 +63,7 @@ class ProcessHyperlinkAction extends FBActivityAction {
 			return;
 		}
 
-		final String text = Reader.getTextView().getSelectedText();
-		if (text != null) {
-			int start = 0;
-			int end = text.length();
-			for (; start < end && !Character.isLetterOrDigit(text.charAt(start)); ++start);
-			for (; start < end && !Character.isLetterOrDigit(text.charAt(end - 1)); --end);
-			if (start == end) {
-				return;
-			}
-			final Intent intent = DictionaryUtil.getDictionaryIntent(text.substring(start, end));
-			try {
-				BaseActivity.startActivity(intent);
-			} catch(ActivityNotFoundException e){
-				DictionaryUtil.installDictionaryIfNotInstalled(BaseActivity);
-				/*
-				Toast.makeText(
-					BaseActivity,
-					ZLResource.resource("errorMessage").getResource("dictionaryIsNotInstalled").getValue(),
-					Toast.LENGTH_LONG
-				).show();
-				*/
-			}
-		}
+		DictionaryUtil.openWordInDictionary(myBaseActivity, Reader.getTextView().getSelectedText());
 	}
 
 	private void openInBrowser(String urlString) {
