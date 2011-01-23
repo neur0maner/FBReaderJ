@@ -171,37 +171,6 @@ public final class FBReader extends ZLAndroidActivity {
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
-		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-	   		final String pattern = intent.getStringExtra(SearchManager.QUERY);
-			final Handler successHandler = new Handler() {
-				public void handleMessage(Message message) {
-					showTextSearchControls(true);
-				}
-			};
-			final Handler failureHandler = new Handler() {
-				public void handleMessage(Message message) {
-					UIUtil.showErrorMessage(FBReader.this, "textNotFound");
-				}
-			};
-			final Runnable runnable = new Runnable() {
-				public void run() {
-					final FBReaderApp fbReader = (FBReaderApp)FBReaderApp.Instance();
-					fbReader.TextSearchPatternOption.setValue(pattern);
-					if (fbReader.getTextView().search(pattern, true, false, false, false) != 0) {
-						successHandler.sendEmptyMessage(0);
-					} else {
-						failureHandler.sendEmptyMessage(0);
-					}
-				}
-			};
-			UIUtil.wait("search", runnable, this);
-		} else {
-			super.onNewIntent(intent);
-		}
-	}
-
-	@Override
 	public void onStart() {
 		super.onStart();
 		final ZLAndroidApplication application = ZLAndroidApplication.Instance();
